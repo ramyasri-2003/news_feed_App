@@ -24,11 +24,24 @@ export default function App() {
     try {
       const q = query ? `&q=${encodeURIComponent(query)}` : "";
       const cat = category ? `&category=${encodeURIComponent(category)}` : "";
-      const url = `${BASE_URL}/top-headlines?language=en&page=${page}&pageSize=${PAGE_SIZE}${q}${cat}&apiKey=${API_KEY}`;
-      const res = await fetch(url);
+      const endpoint = `${BASE_URL}/top-headlines?language=en&page=${page}&pageSize=${PAGE_SIZE}${q}${cat}&apiKey=${API_KEY}`;
+
+      // ✅ Use a reliable CORS proxy to prevent browser blocking
+      const proxyUrl = "https://api.allorigins.win/raw?url=";
+      const url = `${proxyUrl}${encodeURIComponent(endpoint)}`;
+
+      const res = await fetch(url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0",
+          Accept: "application/json",
+        },
+      });
+
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
       const data = await res.json();
       if (data.status !== "ok") throw new Error(data.message);
+
       setArticles(data.articles || []);
       setTotalResults(data.totalResults || 0);
     } catch (err) {
